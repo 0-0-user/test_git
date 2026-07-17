@@ -11,6 +11,9 @@ git reset --hard id		改仓库，将工作区，暂存区回退到对应id的仓
 git reset --hard HEAD^	仓库回退到上一个版本
 git checkout -- file		若暂存区不为空，工作区被暂存区覆盖；若为空，被仓库覆盖
 git reset HEAD file		暂存区被仓库最新版本覆盖，工作区不变
+rm file				删除工作区文件
+git rm file				删除工作区和暂存区文件
+
 常用快捷键：
 CTRL+C				停止工作区卡住
 CTRL+INSERT			复制
