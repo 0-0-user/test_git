@@ -1,0 +1,17 @@
+常用命令：
+git add file			添加文件到暂存区
+git add .				添加工作区所有文件到暂存区
+git commit -m "tip"		将暂存区所有文件上传到仓库，备注tip
+git log				查看提交到仓库的时间戳和地址
+git status				查看工作区，暂存区，仓库的区别
+git diff				比较工作区与暂存区的区别
+git diff --staged		比较暂存区和仓库的区别
+git status				红色字提示工作区和暂存区存在差异，绿色字提示暂存区和仓库存在差异
+git reset --hard id		改仓库，将工作区，暂存区回退到对应id的仓库版本（会删除所有没有提交的修改，所以慎重使用）
+git reset --hard HEAD^	仓库回退到上一个版本
+git checkout -- file		若暂存区不为空，工作区被暂存区覆盖；若为空，被仓库覆盖
+git reset HEAD file		暂存区被仓库最新版本覆盖，工作区不变
+常用快捷键：
+CTRL+C				停止工作区卡住
+CTRL+INSERT			复制
+SHIFT+INSERT			粘贴
