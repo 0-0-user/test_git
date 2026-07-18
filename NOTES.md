@@ -46,6 +46,9 @@
 `git tag`    |											查看所有标签
 `git tag -a <tag-name> -m "<message>" <commit-id>`    |						给指定commit打上带有说明的标签
 `git show <tag-name>`    |									查看指定标签的commit信息
+`git tag -d <tag-name>`    |								删除指定标签
+`git push --tags`    |									将本地所有标签推送到远程
+`git push origin :refs/tags/<tag-name>`或者`git push origin --delete <tag-name>`    |								删除远程标签
 ---
 ## 常用快捷键：
 |快捷键|功能|
@@ -53,6 +56,8 @@
 `CTRL+C`	|									    	停止工作区卡住
 `CTRL+INSERT`						|                   复制
 `SHIFT+INSERT`						|                   粘贴
+`⬆`                                |                   在命令行中快捷输入上一条历史命令
+`⬇`                                |                   在命令行中快捷输入下一条历史命令
 ---
 ## 可能遇到的情况
 1. **远程仓库的默认分支是 main，而本地仓库的默认分支是 master。**
@@ -241,41 +246,26 @@ GitHub 的仓库页面， More - Settings - General - Default branch，有一个
 8. **`git commit -m "tip"`和`git tag <tag-name>`的用途区别**
 
    -   **`git commit -m "..."`** 记录的是过程，修改日志，代码做了什么
-   -   **`git tag v1.0`** 记录的是里程碑，发行版，版本号，**Tag** 是钉死在某个 commit 上的，只要不去手动删标签，`v1.0` 这个标签永远指着那个特定的历史版本。随时可以通过 `git checkout v1.0` 精准回到发布那天的状态。
+   -   **`git tag v1.0`** 记录的是里程碑，发行版，版本号，**Tag** 是钉死在某个 commit 上的，只要不去手动删标签，`v1.0` 这个标签永远指着那个特定的历史版本。随时可以通过 `git checkout v1.0` 精准回到发布那天的状态。**Tag 的名字是全局唯一的。**不能在一个分支上打一个叫 `v1.0` 的标签，又在另一个分支上打一个叫 `v1.0` 的标签，否则会起冲突。如果打错了，删除方式见后文。
+   - **Tag触发GitHub的Release功能。**
+把标签推送到远程仓库后，GitHub 会自动识别出来，让你在网页上生成一个 **“Releases”**。GitHub 会自动为你打包当前代码成 `.zip` 或 `.tar.gz` 供人下载。这是 commit 做不到的。
+步骤如下：
+        ```bash
+        $ git tag -a v1.0 -m "最新版本"
 
----
-
-
-
-**3. Tag 能触发 GitHub 的“Release”功能**
-如果你在 GitHub 仓库里打一个 `v1.0` 的标签，并推送到远程，GitHub 会自动识别出来，让你在网页上生成一个 **“Releases”**。GitHub 会自动为你打包当前代码成 `.zip` 或 `.tar.gz` 供人下载。这是 commit 做不到的。
-
----
-
-### 💡 具体在项目里怎么配合使用？
-
-给你一个典型的**实战流程**：
-
-```bash
-# 1. 日常开发，写了提交日志
-git commit -m "实现了支付功能"
-
-# 2. 继续开发...
-git commit -m "修复了支付按钮闪退的Bug"
-
-# 3. 开发完成，测试通过，准备上线！
-# 使用 git tag 打上版本号，-a 表示带注释，-m 后面跟版本说明
-git tag -a v1.0.0 -m "正式发布1.0版本，支持微信支付"
-
-# 4. 推送到远程（注意：git push 默认不会推标签，必须用 --tags）
-git push origin master --tags
-```
-
-
-**Tag 的名字是全局唯一的。**
-你不能在一个分支上打一个叫 `v1.0` 的标签，又在另一个分支上打一个叫 `v1.0` 的标签，否则会起冲突。
-如果打错了，可以用 `git tag -d v1.0` 在本地删掉，然后推送到远程删除（`git push origin :refs/tags/v1.0`）。
-
+        $ git push --tags
+        ...
+        ...
+        To github.com:0-0-user/test_git.git
+        * [new tag]         v1.0 -> v1.0
+        ```
+        ![github tag](web_tag.png "github tag")
+        ![github release](github_release.png "github release")
+        ![github release download](github_download.png "github release download")
+   - 接下来是删除标签
+     - 本地删除仅需`git tag -d <tag-name>`
+     - 远程删除`git push origin --delete <tag-name>`
+     - 远程也可在github网页上删除，如果尚未release，直接删tag；如果已经release，先删release，再删tag。
 
 
 
