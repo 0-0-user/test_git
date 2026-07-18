@@ -40,6 +40,12 @@
 `git stash drop`    |									删除暂存区内容
 `git stash list`    |									查看暂存区内容
 `git stash apply stash@{0}`    |						释放指定暂存代码
+`git cherry-pick <commit-id>`    |						将指定提交的**修改**导入当前分支，相当于bug修复
+`git tag <tag-name>`    |									给当前分支的最新commit打上标签
+`git tag <tag-name> <commit-id>`    |						给指定commit打上标签
+`git tag`    |											查看所有标签
+`git tag -a <tag-name> -m "<message>" <commit-id>`    |						给指定commit打上带有说明的标签
+`git show <tag-name>`    |									查看指定标签的commit信息
 ---
 ## 常用快捷键：
 |快捷键|功能|
@@ -162,6 +168,53 @@ GitHub 的仓库页面， More - Settings - General - Default branch，有一个
                 new file:   change_on_dev2.txt
         ``` 
     -   由于dev导入了master，master上存在bug时候意味着dev上也可能存在bug，如果此时在dev上修改完bug后提交到master，只需要解决冲突问题。如果在master上修改完bug，再在dev修改bug，不需要重新干一遍修复的活，只需要使用`git cherry-pick <commit-id>`将master上修复bug的提交导入到dev分支即可:
+        ```bash
+        #在master上面人为制造bug
+        $ git add .
+        $ git commit -m "在master制造了一个bug"
+        [master 27ca68e] 在master制造了一个bug
+        2 files changed, 56 insertions(+), 1 deletion(-)
+        create mode 100644 bug_on_master.txt
+
+        #在dev上面工作
+        $ git switch -c dev
+        Switched to a new branch 'dev'
+        $ git add .
+        $ git commit -m "在dev上面进行工作，但还没有修复bug"
+        [dev 909aaf7] 在dev上面进行工作，但还没有修复bug
+        1 file changed, 0 insertions(+), 0 deletions(-)
+        create mode 100644 work_on_dev.txt
+
+        #切回master去修复bug
+        $ git switch master
+        Switched to branch 'master'
+        Your branch is ahead of 'origin/master' by 1 commit.
+        (use "git push" to publish your local commits)
+        $ git add .
+        $ git commit -m "在master上面成功修复bug"
+        [master a8bdb0e] 在master上面成功修复bug
+        1 file changed, 1 insertion(+), 1 deletion(-)
+
+        #查看提交情况
+        $ git log --graph --oneline --all
+        * a8bdb0e (HEAD -> master) 在master上面成功修复bug
+        | * 909aaf7 (dev) 在dev上面进行工作，但还没有修复bug
+        |/
+        * 27ca68e 在master制造了一个bug
+        * 9d7de85 测试
+        #此时可以发现master上的bug成功修复，但是dev上的尚未修复
+
+        #记住master修复提交后的地址a8bdb0e
+        #前往dev上面进行修复
+        $ git switch dev
+        Switched to branch 'dev'
+        $ git cherry-pick a8bdb0e #修复指令
+        [dev b6d4d7c] 在master上面成功修复bug
+        Date: Sat Jul 18 11:24:40 2026 +0800
+        1 file changed, 1 insertion(+), 1 deletion(-)
+
+        #修复成功
+        ```
 
 7. **暂存区只有一个**
    -   在同一个本地的 Git 仓库中，暂存区（Staging Area / Index）只有一个，它是全局的，所有分支共享，只要没有commit,，就有可能出现如下情况：
@@ -184,6 +237,46 @@ GitHub 的仓库页面， More - Settings - General - Default branch，有一个
         #这意味着此时master分支上不仅包含原先的master.txt文件
         #也包含了dev分支上的dev.txt文件
         ```
+
+8. **`git commit -m "tip"`和`git tag <tag-name>`的用途区别**
+
+   -   **`git commit -m "..."`** 记录的是过程，修改日志，代码做了什么
+   -   **`git tag v1.0`** 记录的是里程碑，发行版，版本号，**Tag** 是钉死在某个 commit 上的，只要不去手动删标签，`v1.0` 这个标签永远指着那个特定的历史版本。随时可以通过 `git checkout v1.0` 精准回到发布那天的状态。
+
+---
+
+
+
+**3. Tag 能触发 GitHub 的“Release”功能**
+如果你在 GitHub 仓库里打一个 `v1.0` 的标签，并推送到远程，GitHub 会自动识别出来，让你在网页上生成一个 **“Releases”**。GitHub 会自动为你打包当前代码成 `.zip` 或 `.tar.gz` 供人下载。这是 commit 做不到的。
+
+---
+
+### 💡 具体在项目里怎么配合使用？
+
+给你一个典型的**实战流程**：
+
+```bash
+# 1. 日常开发，写了提交日志
+git commit -m "实现了支付功能"
+
+# 2. 继续开发...
+git commit -m "修复了支付按钮闪退的Bug"
+
+# 3. 开发完成，测试通过，准备上线！
+# 使用 git tag 打上版本号，-a 表示带注释，-m 后面跟版本说明
+git tag -a v1.0.0 -m "正式发布1.0版本，支持微信支付"
+
+# 4. 推送到远程（注意：git push 默认不会推标签，必须用 --tags）
+git push origin master --tags
+```
+
+
+**Tag 的名字是全局唯一的。**
+你不能在一个分支上打一个叫 `v1.0` 的标签，又在另一个分支上打一个叫 `v1.0` 的标签，否则会起冲突。
+如果打错了，可以用 `git tag -d v1.0` 在本地删掉，然后推送到远程删除（`git push origin :refs/tags/v1.0`）。
+
+
 
 
 
