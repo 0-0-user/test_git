@@ -127,9 +127,63 @@ GitHub 的仓库页面， More - Settings - General - Default branch，有一个
 
 6. **在dev上面工作到一半时（还不能上传），master分支上出现bug**
    - `git stash`暂存（保存当前进度），工作区变得干净
+      - **注意**：这里需要配合着`git add`使用，先将工作区的修改添加到暂存区，然后再`git stash`。情况如下：
+        ```bash
+        $ git status
+        On branch dev #显示在dev1分支上的更改
+        Untracked files:
+        (use "git add <file>..." to include in what will be committed)
+                change1.txt
+                change2.txt
+
+        $ git stash
+        No local changes to save
+        #在没有git add的情况下，git stash会提示没有修改可以暂存
+
+        $ git add .
+
+        $ git stash #git add之后，git stash就可以正常使用了
+        Saved working directory and index state WIP on dev: 
+        aca55ce <last commit tip>
+        ```  
    - 切换到`master`去修bug，通常修bug需要新建一个分支，在分支上修好后合并回去
    - 修好后切回dev分支，用`git stash pop`释放暂存代码（读取当前进度）
-  **进阶：**
+  **进阶：**    
+   - 创建了多个分支并且在每个分支上都使用了`git stash`，这时候可以用`git stash list`查看所有的暂存代码，然后用`git stash apply stash@{0}`释放指定的暂存代码：
+        ```bash
+        $ git stash list
+        stash@{0}: WIP on dev2: aca55ce <last commit tip>
+        stash@{1}: WIP on dev1: aca55ce <last commit tip>
+
+        $ git stash apply stash@{0}
+        On branch dev2
+        Changes to be committed:
+        (use "git restore --staged <file>..." to unstage)
+                new file:   change_on_dev2.txt
+        ``` 
+    -   由于dev导入了master，master上存在bug时候意味着dev上也可能存在bug，如果此时在dev上修改完bug后提交到master，只需要解决冲突问题。如果在master上修改完bug，再在dev修改bug，不需要重新干一遍修复的活，只需要使用`git cherry-pick <commit-id>`将master上修复bug的提交导入到dev分支即可:
+
+7. **暂存区只有一个**
+   -   在同一个本地的 Git 仓库中，暂存区（Staging Area / Index）只有一个，它是全局的，所有分支共享，只要没有commit,，就有可能出现如下情况：
+        ```bash
+        #在master分支上新建了一个文件master.txt
+        $ git add . #然后添加到暂存区
+
+        $ git switch -c dev #创建新的分支dev
+        Switched to a new branch 'dev' #此时dev上面包含了一个master.txtr文件
+
+        #在dev上面新建了一个dev.txt文件
+        $ git add . #保存到暂存区
+
+        #这时切换回master
+        $ git switch master
+        A       master.txt
+        A       dev.txt
+        Switched to branch 'master'
+        Your branch is up to date with 'origin/master'.
+        #这意味着此时master分支上不仅包含原先的master.txt文件
+        #也包含了dev分支上的dev.txt文件
+        ```
 
 
 
